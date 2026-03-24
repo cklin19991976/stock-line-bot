@@ -22,7 +22,7 @@ USER_ID = os.getenv("USER_ID")
 SYMBOLS = {
     "AAPL": 200,
     "TSLA": 250,
-    "NVDA": 170
+    "NVDA": 270
 }
 CHECK_INTERVAL = 60  # seconds
 COOLDOWN = 1800  # seconds per symbol
