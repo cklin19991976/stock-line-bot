@@ -22,10 +22,10 @@ USER_ID = os.getenv("USER_ID")
 SYMBOLS = {
     "AAPL": 200,
     "TSLA": 250,
-    "NVDA": 900
+    "NVDA": 170
 }
 CHECK_INTERVAL = 60  # seconds
-COOLDOWN = 300  # seconds per symbol
+COOLDOWN = 1800  # seconds per symbol
 
 last_alert_time = {}
 
