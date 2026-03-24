@@ -1,4 +1,4 @@
 # -------- requirements.txt --------
-# yfinance
-# requests
-# pandas
+yfinance
+requests
+pandas
