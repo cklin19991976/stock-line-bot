@@ -40,10 +40,11 @@ def send_line(msg):
         "to": USER_ID,
         "messages": [{"type": "text", "text": msg}]
     }
-    try:
-        requests.post(url, headers=headers, json=data)
-    except Exception as e:
-        print("LINE send error:", e)
+
+    r = requests.post(url, headers=headers, json=data)
+
+    print("STATUS:", r.status_code)
+    print("RESPONSE:", r.text)	
 
 
 def check_stock(symbol, threshold):
