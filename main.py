@@ -24,6 +24,7 @@ SYMBOLS = {
 
 CHECK_INTERVAL = 60
 COOLDOWN = 1800  # seconds
+last_heartbeat = 0
 
 # Track last alert state
 last_state = {}   # "above", "below", "normal"
@@ -43,6 +44,9 @@ def send_line(msg):
     )
     print("LINE:", r.status_code, r.text)
 
+def send_heartbeat():
+    msg = "🟢 Stock bot alive and running"
+    send_line(msg)
 
 def check_stock(symbol, config):
     try:
@@ -86,26 +90,27 @@ def check_stock(symbol, config):
 
             last_state[symbol] = current_state
             last_alert_time[symbol] = now
-    
-        # Show the system is alive message
-	#elif current_state == prev_state and (now - last_time > COOLDOWN):
-        #    msg = f"🚨 {symbol} System alive \nCurrent: {round(price,2)}"
-        #    print(msg)
-        #    send_line(msg)
-        #    last_alert_time[symbol] = now
-	#
-	#else:
 
     except Exception as e:
         print(f"Error {symbol}:", e)
 
 
 def main():
+    global last_heartbeat
+
     print("Stock bot started...")
 
     while True:
+        now = time.time()
+
         for symbol, config in SYMBOLS.items():
             check_stock(symbol, config)
+
+        # Heartbeat check
+        if now - last_heartbeat > COOLDOWN:
+            print("Sending heartbeat...")
+            send_heartbeat()
+            last_heartbeat = now
 
         time.sleep(CHECK_INTERVAL)
 
