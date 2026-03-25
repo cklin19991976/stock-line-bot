@@ -107,7 +107,7 @@ def main():
             check_stock(symbol, config)
 
         # Heartbeat check
-        if now - last_heartbeat > COOLDOWN:
+        if now - last_heartbeat > (COOLDOWN*2):
             print("Sending heartbeat...")
             send_heartbeat()
             last_heartbeat = now
