@@ -24,12 +24,10 @@ SYMBOLS = {
 
 CHECK_INTERVAL = 60
 COOLDOWN = 1800  # seconds
-COOLDOWN2 = 300  # seconds
 
 # Track last alert state
 last_state = {}   # "above", "below", "normal"
 last_alert_time = {}
-last_alert_time2 = {}
 
 def send_line(msg):
     r = requests.post(
@@ -63,7 +61,6 @@ def check_stock(symbol, config):
         now = time.time()
         prev_state = last_state.get(symbol, "normal")
         last_time = last_alert_time.get(symbol, 0)
-	last_time2 = last_alert_time2.get(symbol, 0)
 
         # Determine current state
         if price > upper:
@@ -91,11 +88,12 @@ def check_stock(symbol, config):
             last_alert_time[symbol] = now
     
         # Show the system is alive message
-	if symbol == "AAPL" and (now - last_time2 > COOLDOWN2):
+	elif current_state == prev_state and (now - last_time > 300):
             msg = f"🚨 {symbol} System alive \nCurrent: {round(price,2)}"
             print(msg)
             send_line(msg)
-            last_alert_time2[symbol] = now
+            last_alert_time[symbol] = now
+        else:
 
     except Exception as e:
         print(f"Error {symbol}:", e)
