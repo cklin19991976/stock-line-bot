@@ -88,13 +88,13 @@ def check_stock(symbol, config):
             last_alert_time[symbol] = now
     
         # Show the system is alive message
-	elif current_state == prev_state and (now - last_time > COOLDOWN):
-            msg = f"🚨 {symbol} System alive \nCurrent: {round(price,2)}"
-            print(msg)
-            send_line(msg)
-            last_alert_time[symbol] = now
-	
-	else:
+	#elif current_state == prev_state and (now - last_time > COOLDOWN):
+        #    msg = f"🚨 {symbol} System alive \nCurrent: {round(price,2)}"
+        #    print(msg)
+        #    send_line(msg)
+        #    last_alert_time[symbol] = now
+	#
+	#else:
 
     except Exception as e:
         print(f"Error {symbol}:", e)
