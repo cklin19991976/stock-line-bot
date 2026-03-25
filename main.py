@@ -1,15 +1,3 @@
-# =========================
-# Railway Stock Alert Bot
-# Yahoo Finance → LINE
-# =========================
-
-# -------- requirements.txt --------
-# yfinance
-# requests
-# pandas
-
-
-# -------- main.py --------
 import yfinance as yf
 import requests
 import time
@@ -20,107 +8,98 @@ USER_ID = os.getenv("USER_ID")
 
 # ===== CONFIG =====
 SYMBOLS = {
-    "AAPL": 300,
-    "SPY": 614,
-    "QQQ": 540,
-    "TSM": 300,
-    "ASML": 1250,
-    "UCO": 39.66,
-    "GOOG": 276,
-    "MSFT": 347,	
-    "NVDA": 160
+    "AAPL": {"upper": 300, "lower": 299},
+    "SPY": {"upper": 697, "lower": 614},
+    "QQQ": {"upper": 637, "lower": 540},
+    "TSM": {"upper": 390, "lower": 300},
+    "ASML": {"upper": 1547, "lower": 1250},
+    "UCO": {"upper": 44.25, "lower": 39.66},
+    "GOOG": {"upper": 350, "lower": 276},
+    "MSFT": {"upper": 555, "lower": 347},
+    "NVDA": {"upper": 212, "lower": 160},
+    "CL=F": {"upper": 110, "lower": 80},
+    "2330.TW": {"upper": 2025, "lower": 1750},
+    "0050.TW": {"upper": 81.8, "lower": 70},
 }
-CHECK_INTERVAL = 60  # seconds
-COOLDOWN = 1800  # seconds per symbol
 
+CHECK_INTERVAL = 60
+COOLDOWN = 1800  # seconds
+
+# Track last alert state
+last_state = {}   # "above", "below", "normal"
 last_alert_time = {}
 
-
 def send_line(msg):
-    url = "https://api.line.me/v2/bot/message/push"
-    headers = {
-        "Authorization": f"Bearer {LINE_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "to": USER_ID,
-        "messages": [{"type": "text", "text": msg}]
-    }
-
-    r = requests.post(url, headers=headers, json=data)
-
-    print("STATUS:", r.status_code)
-    print("RESPONSE:", r.text)	
+    r = requests.post(
+        "https://api.line.me/v2/bot/message/push",
+        headers={
+            "Authorization": f"Bearer {LINE_TOKEN}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "to": USER_ID,
+            "messages": [{"type": "text", "text": msg}]
+        }
+    )
+    print("LINE:", r.status_code, r.text)
 
 
-def check_stock(symbol, threshold):
+def check_stock(symbol, config):
     try:
-        ticker = yf.Ticker(symbol)
-        price = ticker.history(period="1d", interval="1m")["Close"].iloc[-1]
+        data = yf.Ticker(symbol).history(period="1d")
+
+        if data.empty:
+            print(f"No data for {symbol}")
+            return
+
+        price = data["Close"].iloc[-1]
+        print(f"{symbol} price: {price}")
+
+        upper = config["upper"]
+        lower = config["lower"]
 
         now = time.time()
+        prev_state = last_state.get(symbol, "normal")
         last_time = last_alert_time.get(symbol, 0)
 
-        if price < threshold and (now - last_time > COOLDOWN):
-            msg = f"🚨 {symbol} below {threshold}\nCurrent: {round(price,2)}"
-            print(msg)
+        # Determine current state
+        if price > upper:
+            current_state = "above"
+        elif price < lower:
+            current_state = "below"
+        else:
+            current_state = "normal"
+
+        # Only alert when state changes + cooldown passed
+        if current_state != prev_state and (now - last_time > COOLDOWN):
+
+            if current_state == "above":
+                msg = f"🚀 {symbol} ABOVE {upper}\nNow: {round(price,2)}"
+
+            elif current_state == "below":
+                msg = f"🔻 {symbol} BELOW {lower}\nNow: {round(price,2)}"
+
+            else:
+                msg = f"↔️ {symbol} back to normal range\nNow: {round(price,2)}"
+
             send_line(msg)
+
+            last_state[symbol] = current_state
             last_alert_time[symbol] = now
 
     except Exception as e:
-        print(f"Error checking {symbol}:", e)
+        print(f"Error {symbol}:", e)
 
 
 def main():
     print("Stock bot started...")
+
     while True:
-        for symbol, threshold in SYMBOLS.items():
-            check_stock(symbol, threshold)
+        for symbol, config in SYMBOLS.items():
+            check_stock(symbol, config)
+
         time.sleep(CHECK_INTERVAL)
 
 
 if __name__ == "__main__":
     main()
-
-
-# -------- Procfile (for Railway) --------
-# worker: python main.py
-
-
-# -------- README.md --------
-"""
-# Railway Stock Alert Bot
-
-## Setup
-
-1. Create a LINE Messaging API channel
-2. Get:
-   - LINE_TOKEN
-   - USER_ID
-
-3. Deploy to Railway
-
-## Environment Variables
-
-LINE_TOKEN=your_token
-USER_ID=your_user_id
-
-## Run
-
-Railway will automatically run using Procfile
-
-## Customize
-
-Edit SYMBOLS in main.py:
-
-SYMBOLS = {
-    "AAPL": 200,
-    "TSLA": 250
-}
-
-## Notes
-
-- Checks every 60 seconds
-- Cooldown prevents spam alerts
-- Uses Yahoo Finance via yfinance
-"""
