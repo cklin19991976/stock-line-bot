@@ -48,7 +48,7 @@ def send_line(msg):
     print("LINE:", r.status_code, r.text)
 
 def send_heartbeat():
-    msg = "🟢 Stock bot alive and working now."
+    msg = "🟢 Stock bot working."
     send_line(msg)
 
 def check_stock(symbol, config):
