@@ -48,7 +48,7 @@ def send_line(msg):
     print("LINE:", r.status_code, r.text)
 
 def send_heartbeat():
-    msg = "🟢 Stock bot alive and running"
+    msg = "🟢 Stock bot alive and working now."
     send_line(msg)
 
 def check_stock(symbol, config):
@@ -104,16 +104,16 @@ def main():
     print("Stock bot started...")
 
     while True:
-        now = time.time()
+        nowx = time.time()
 
         for symbol, config in SYMBOLS.items():
             check_stock(symbol, config)
 
         # Heartbeat check
-        if now - last_heartbeat > (COOLDOWN*8):
+        if nowx - last_heartbeat > (COOLDOWN*8):
             print("Sending heartbeat...")
             send_heartbeat()
-            last_heartbeat = now
+            last_heartbeat = nowx
 
         time.sleep(CHECK_INTERVAL)
 
