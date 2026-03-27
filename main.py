@@ -26,7 +26,7 @@ SYMBOLS = {
     "NVDA": {"upper": 212, "lower": 160},
     "CL=F": {"upper": 110, "lower": 80},
     "^TNX": {"upper": 4.55, "lower": 3.95},
-    "2330.TW": {"upper": 2025, "lower": 1750},
+    "2330.TW": {"upper": 2024, "lower": 1750},
     "0050.TW": {"upper": 81.8, "lower": 70},
     "1215.TW": {"upper": 160, "lower": 140},
     "00662.TW": {"upper": 105, "lower": 90},
