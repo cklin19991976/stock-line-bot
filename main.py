@@ -3,7 +3,10 @@ import requests
 import time
 import os
 import feedparser
+import re
+import calendar
 from urllib.parse import quote
+from datetime import datetime, timezone
 
 LINE_TOKEN = os.getenv("LINE_TOKEN")
 USER_ID = os.getenv("USER_ID")
@@ -48,17 +51,15 @@ SECTOR_ETF = {
     "2330.TW": "^TWII" # Taiwan market index
 }
 
-CHECK_INTERVAL = 60          # seconds
-COOLDOWN = 1800               # seconds
-HEARTBEAT_INTERVAL = 14400    # seconds
+CHECK_INTERVAL = 60
+COOLDOWN = 1800
+HEARTBEAT_INTERVAL = 14400
 
-# Separate "meaningful move" filters
-MEANINGFUL_UP_MOVE_PCT = 2.0
+MEANINGFUL_UP_MOVE_PCT = 0.1
 MEANINGFUL_DOWN_MOVE_PCT = 1.5
 
-# Runtime state
-last_state = {}        # "above", "below", "normal"
-last_alert_time = {}   # per-symbol cooldown
+last_state = {}
+last_alert_time = {}
 last_heartbeat = 0
 
 
@@ -88,60 +89,146 @@ def send_line(msg):
 
 
 def send_heartbeat():
-    """
-    Periodically send a system alive message
-    """
-    msg = "🟢 Stockbot alive running"
+    msg = "🟢 StockBot alive runningxx"
     send_line(msg)
 
 
-def get_stock_reason(symbol, max_items=2):
+def get_stock_reason(symbol, max_items=2, direction=None):
     """
-    Try Yahoo Finance news first.
-    If empty, fallback to Google News RSS.
-    Returns headline + source + link.
+    Smarter news fetch:
+    1) Try Yahoo Finance news first
+    2) Fallback to Google News RSS
+    3) Score headlines by relevance
+    4) Prefer recent + directional + stock-relevant headlines
+
+    direction = "above" or "below" or None
     """
-    # ---------- 1) Try yfinance news ----------
+    POSITIVE_KEYWORDS = [
+        "beat", "beats", "surge", "jump", "rise", "rises", "rally", "gain", "gains",
+        "upgrade", "upgrades", "buy rating", "outperform", "strong demand", "record",
+        "forecast raised", "guidance raised", "ai demand", "partnership", "approval"
+    ]
+
+    NEGATIVE_KEYWORDS = [
+        "miss", "misses", "drop", "drops", "fall", "falls", "selloff", "decline",
+        "downgrade", "downgrades", "cut target", "guidance cut", "weak demand",
+        "delay", "lawsuit", "probe", "investigation", "recall", "warning"
+    ]
+
+    GENERAL_RELEVANT = [
+        "earnings", "revenue", "profit", "margin", "guidance", "forecast",
+        "analyst", "rating", "price target", "delivery", "demand", "sales",
+        "chip", "ai", "iphone", "ev", "semiconductor"
+    ]
+
+    company = COMPANY_NAMES.get(symbol, symbol)
+    symbol_root = symbol.replace(".TW", "").upper()
+
+    def score_headline(title, source="", published_dt=None):
+        score = 0
+        text = f"{title} {source}".lower()
+
+        # Mention company or ticker
+        if company.lower() in text:
+            score += 4
+        if symbol_root.lower() in text:
+            score += 3
+
+        # General finance relevance
+        for kw in GENERAL_RELEVANT:
+            if kw in text:
+                score += 2
+
+        # Directional relevance
+        if direction == "above":
+            for kw in POSITIVE_KEYWORDS:
+                if kw in text:
+                    score += 3
+        elif direction == "below":
+            for kw in NEGATIVE_KEYWORDS:
+                if kw in text:
+                    score += 3
+        else:
+            for kw in POSITIVE_KEYWORDS + NEGATIVE_KEYWORDS:
+                if kw in text:
+                    score += 2
+
+        # Penalize weak headlines
+        WEAK_PATTERNS = [
+            "opens new store",
+            "what analysts think",
+            "watch these stocks",
+            "market wrap",
+            "top stocks to watch",
+            "morning briefing",
+            "newsletter"
+        ]
+        for weak in WEAK_PATTERNS:
+            if weak in text:
+                score -= 3
+
+        # Recency bonus
+        if published_dt:
+            try:
+                now = datetime.now(timezone.utc)
+                age_hours = (now - published_dt).total_seconds() / 3600
+
+                if age_hours <= 24:
+                    score += 4
+                elif age_hours <= 48:
+                    score += 2
+                elif age_hours <= 72:
+                    score += 1
+                else:
+                    score -= 2
+            except:
+                pass
+
+        return score
+
+    candidates = []
+
+    # ---------- Yahoo Finance ----------
     try:
         ticker = yf.Ticker(symbol)
         news = ticker.news
 
-        reasons = []
-
         if news:
-            for item in news[:max_items]:
+            for item in news:
                 title = item.get("title", "").strip()
                 publisher = item.get("publisher", "").strip()
                 link = item.get("link", "").strip()
 
+                published_dt = None
+                ts = item.get("providerPublishTime") or item.get("pubDate")
+                if ts:
+                    try:
+                        if isinstance(ts, (int, float)):
+                            published_dt = datetime.fromtimestamp(ts, tz=timezone.utc)
+                    except:
+                        pass
+
                 if title:
-                    parts = [f"- {title}"]
-
-                    if publisher:
-                        parts.append(f"  Source: {publisher}")
-
-                    if link:
-                        parts.append(f"  Link: {link}")
-
-                    reasons.append("\n".join(parts))
-
-        if reasons:
-            return "\n\n".join(reasons)
+                    score = score_headline(title, publisher, published_dt)
+                    candidates.append({
+                        "title": title,
+                        "source": publisher,
+                        "link": link,
+                        "score": score,
+                        "published_dt": published_dt
+                    })
 
     except Exception as e:
         print(f"Yahoo news fetch error for {symbol}: {e}")
 
-    # ---------- 2) Fallback: Google News RSS ----------
+    # ---------- Google News RSS ----------
     try:
-        company = COMPANY_NAMES.get(symbol, symbol)
         query = quote(f"{company} stock")
         rss_url = f"https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
 
         feed = feedparser.parse(rss_url)
 
-        reasons = []
-
-        for entry in feed.entries[:max_items]:
+        for entry in feed.entries:
             title = getattr(entry, "title", "").strip()
             link = getattr(entry, "link", "").strip()
 
@@ -151,24 +238,97 @@ def get_stock_reason(symbol, max_items=2):
                 title = title_parts[0].strip()
                 source = title_parts[1].strip()
 
+            published_dt = None
+            try:
+                if hasattr(entry, "published_parsed") and entry.published_parsed:
+                    ts = calendar.timegm(entry.published_parsed)
+                    published_dt = datetime.fromtimestamp(ts, tz=timezone.utc)
+            except:
+                pass
+
             if title:
-                parts = [f"- {title}"]
-
-                if source:
-                    parts.append(f"  Source: {source}")
-
-                if link:
-                    parts.append(f"  Link: {link}")
-
-                reasons.append("\n".join(parts))
-
-        if reasons:
-            return "\n\n".join(reasons)
+                score = score_headline(title, source, published_dt)
+                candidates.append({
+                    "title": title,
+                    "source": source,
+                    "link": link,
+                    "score": score,
+                    "published_dt": published_dt
+                })
 
     except Exception as e:
         print(f"Google RSS fetch error for {symbol}: {e}")
 
-    return "No recent news found."
+    # ---------- Filter ----------
+    filtered = [x for x in candidates if x["score"] >= 4]
+    if not filtered:
+        filtered = [x for x in candidates if x["score"] >= 2]
+
+    if not filtered:
+        return "No recent high-confidence news found."
+
+    # ---------- Sort ----------
+    def sort_key(x):
+        published_ts = x["published_dt"].timestamp() if x["published_dt"] else 0
+        return (x["score"], published_ts)
+
+    filtered = sorted(filtered, key=sort_key, reverse=True)
+
+    # ---------- Deduplicate ----------
+    final_items = []
+    seen = set()
+
+    for item in filtered:
+        key = re.sub(r'[^a-z0-9 ]', '', item["title"].lower()).strip()
+        if key not in seen:
+            seen.add(key)
+            final_items.append(item)
+
+        if len(final_items) >= max_items:
+            break
+
+    # ---------- Format ----------
+    reasons = []
+    for item in final_items:
+        parts = [f"- {item['title']}"]
+
+        if item["source"]:
+            parts.append(f"  Source: {item['source']}")
+
+        if item["link"]:
+            parts.append(f"  Link: {item['link']}")
+
+        reasons.append("\n".join(parts))
+
+    if reasons:
+        return "\n\n".join(reasons)
+
+    return "No recent high-confidence news found."
+
+
+def detect_event_context(symbol):
+    """
+    Detect likely event / earnings context from news headlines.
+    """
+    try:
+        raw = get_stock_reason(symbol, max_items=4, direction=None).lower()
+
+        event_signals = []
+
+        if any(k in raw for k in ["earnings", "revenue", "profit", "guidance", "forecast"]):
+            event_signals.append("📅 Event context:\nPossible earnings / guidance-related move.")
+
+        if any(k in raw for k in ["analyst", "rating", "price target", "upgrade", "downgrade"]):
+            event_signals.append("📅 Event context:\nPossible analyst rating / target-related move.")
+
+        if any(k in raw for k in ["approval", "partnership", "launch", "delivery", "demand"]):
+            event_signals.append("📅 Event context:\nPossible product / demand / business event-related move.")
+
+        return "\n\n".join(event_signals)
+
+    except Exception as e:
+        print(f"Event context error for {symbol}: {e}")
+        return ""
 
 
 def explain_stock_move(symbol, price, pct_change, direction):
@@ -177,18 +337,22 @@ def explain_stock_move(symbol, price, pct_change, direction):
     1) company news
     2) sector ETF move
     3) technical breakout / breakdown
-
-    direction = "above" or "below"
+    4) event-day detection
     """
     reasons = []
 
     # ---------- A) Company news ----------
-    news_reason = get_stock_reason(symbol, max_items=2)
+    news_reason = get_stock_reason(symbol, max_items=2, direction=direction)
 
-    if "No recent news found" not in news_reason and "Unable to fetch" not in news_reason:
+    if "No recent high-confidence news found" not in news_reason and "Unable to fetch" not in news_reason:
         reasons.append("📰 Company / recent news:\n" + news_reason)
 
-    # ---------- B) Sector / market move ----------
+    # ---------- B) Event context ----------
+    event_context = detect_event_context(symbol)
+    if event_context:
+        reasons.append(event_context)
+
+    # ---------- C) Sector / market move ----------
     try:
         sector_symbol = SECTOR_ETF.get(symbol)
 
@@ -206,7 +370,6 @@ def explain_stock_move(symbol, price, pct_change, direction):
                         f"{sector_symbol} moved {sector_pct:+.2f}% today"
                     )
 
-                # Compare stock move vs sector move
                 relative = pct_change - sector_pct
                 if abs(relative) >= 2.0:
                     if relative > 0:
@@ -223,7 +386,7 @@ def explain_stock_move(symbol, price, pct_change, direction):
     except Exception as e:
         print(f"Sector check error for {symbol}: {e}")
 
-    # ---------- C) Technical breakout / breakdown ----------
+    # ---------- D) Technical breakout / breakdown ----------
     try:
         hist = yf.Ticker(symbol).history(period="1mo")
 
@@ -238,7 +401,7 @@ def explain_stock_move(symbol, price, pct_change, direction):
     except Exception as e:
         print(f"Technical check error for {symbol}: {e}")
 
-    # ---------- D) Better fallback by direction ----------
+    # ---------- Fallback ----------
     if not reasons:
         if direction == "above":
             reasons.append(
