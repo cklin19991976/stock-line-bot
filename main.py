@@ -8,21 +8,10 @@ USER_ID = os.getenv("USER_ID")
 
 # ===== CONFIG =====
 SYMBOLS = {
-    "AAPL": {"upper": 200, "lower": 99},
-    "SPY": {"upper": 697, "lower": 614},
-    "QQQ": {"upper": 637, "lower": 540},
-    "TSM": {"upper": 390, "lower": 300},
-    "ASML": {"upper": 1547, "lower": 1250},
-    "UCO": {"upper": 44.12, "lower": 28},
-    "GOOG": {"upper": 350, "lower": 276},
-    "MSFT": {"upper": 555, "lower": 347},
-    "NVDA": {"upper": 212, "lower": 160},
-    "CL=F": {"upper": 110, "lower": 80},
-    "^TNX": {"upper": 4.55, "lower": 3.95},
-    "2330.TW": {"upper": 2025, "lower": 1750},
-    "0050.TW": {"upper": 81.8, "lower": 70},
-    "1215.TW": {"upper": 160, "lower": 140},
-    "00662.TW": {"upper": 105, "lower": 90},
+    "AAPL": {"upper": 200, "lower": 180},
+    "TSLA": {"upper": 250, "lower": 220},
+    "NVDA": {"upper": 950, "lower": 850},
+    # "2330.TW": {"upper": 1100, "lower": 950},
 }
 
 CHECK_INTERVAL = 60        # check every 60 seconds
@@ -63,13 +52,13 @@ def send_heartbeat():
     """
     Periodically send a system alive message
     """
-    msg = "🟢 Stock bot is running"
+    msg = "🟢 Stock bot runningx"
     send_line(msg)
 
 
 def get_stock_reason(symbol, max_items=3):
     """
-    Fetch recent news headlines for a stock and include source + URL
+    Fetch recent news headlines for a stock and turn them into a short explanation.
     """
     try:
         ticker = yf.Ticker(symbol)
@@ -81,25 +70,18 @@ def get_stock_reason(symbol, max_items=3):
         reasons = []
 
         for item in news[:max_items]:
-            title = item.get("title", "").strip()
-            publisher = item.get("publisher", "").strip()
-            link = item.get("link", "").strip()
-
+            title = item.get("title", "")
+            publisher = item.get("publisher", "")
             if title:
-                line = f"- {title}"
-
                 if publisher:
-                    line += f" ({publisher})"
-
-                if link:
-                    line += f"\n  {link}"
-
-                reasons.append(line)
+                    reasons.append(f"- {title} ({publisher})")
+                else:
+                    reasons.append(f"- {title}")
 
         if not reasons:
             return "No clear recent headline found. Move may be technical or market-driven."
 
-        return "\n\n".join(reasons)
+        return "\n".join(reasons)
 
     except Exception as e:
         print(f"News fetch error for {symbol}: {e}")
@@ -111,9 +93,9 @@ def check_stock(symbol, config):
     Check stock price against upper/lower thresholds
     """
     try:
-        data = yf.Ticker(symbol).history(period="2d")
+        data = yf.Ticker(symbol).history(period="1d")
 
-        if data.empty or len(data) < 1:
+        if data.empty:
             print(f"No data for {symbol}")
             return
 
@@ -122,15 +104,6 @@ def check_stock(symbol, config):
 
         upper = config["upper"]
         lower = config["lower"]
-
-        # Calculate daily % change
-        if len(data) >= 2:
-            prev_close = data["Close"].iloc[-2]
-            pct_change = ((price - prev_close) / prev_close) * 100
-        else:
-            pct_change = 0
-
-        pct_text = f"{pct_change:+.2f}% today"
 
         now = time.time()
         prev_state = last_state.get(symbol, "normal")
@@ -152,24 +125,20 @@ def check_stock(symbol, config):
 
                 msg = (
                     f"🚀 {symbol} ABOVE {upper}\n"
-                    f"Now: {round(price,2)} ({pct_text})\n\n"
+                    f"Now: {round(price,2)}\n\n"
                     f"Possible reason:\n{reason}"
                 )
 
             elif current_state == "below":
- 		#reason = get_stock_reason(symbol)
-
                 msg = (
                     f"🔻 {symbol} BELOW {lower}\n"
-		    f"Now: {round(price,2)} ({pct_text})"
-                #    f"Now: {round(price,2)} ({pct_text})\n\n"
-		#    f"Possible reason:\n{reason}"
+                    f"Now: {round(price,2)}"
                 )
 
             else:
                 msg = (
                     f"↔️ {symbol} back to normal range\n"
-                    f"Now: {round(price,2)} ({pct_text})"
+                    f"Now: {round(price,2)}"
                 )
 
             send_line(msg)
