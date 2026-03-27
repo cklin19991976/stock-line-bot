@@ -2,16 +2,29 @@ import yfinance as yf
 import requests
 import time
 import os
+import feedparser
+from urllib.parse import quote
 
 LINE_TOKEN = os.getenv("LINE_TOKEN")
 USER_ID = os.getenv("USER_ID")
 
 # ===== CONFIG =====
 SYMBOLS = {
-    "AAPL": {"upper": 200, "lower": 180},
-    "TSLA": {"upper": 250, "lower": 220},
-    "NVDA": {"upper": 950, "lower": 850},
-    # "2330.TW": {"upper": 1100, "lower": 950},
+    "AAPL": {"upper": 200, "lower": 99},
+    "SPY": {"upper": 697, "lower": 614},
+    "QQQ": {"upper": 637, "lower": 540},
+    "TSM": {"upper": 390, "lower": 300},
+    "ASML": {"upper": 1547, "lower": 1250},
+    "UCO": {"upper": 44.12, "lower": 28},
+    "GOOG": {"upper": 350, "lower": 276},
+    "MSFT": {"upper": 555, "lower": 347},
+    "NVDA": {"upper": 212, "lower": 160},
+    "CL=F": {"upper": 110, "lower": 80},
+    "^TNX": {"upper": 4.55, "lower": 3.95},
+    "2330.TW": {"upper": 2025, "lower": 1750},
+    "0050.TW": {"upper": 81.8, "lower": 70},
+    "1215.TW": {"upper": 160, "lower": 140},
+    "00662.TW": {"upper": 105, "lower": 90},
 }
 
 CHECK_INTERVAL = 60        # check every 60 seconds
@@ -52,40 +65,84 @@ def send_heartbeat():
     """
     Periodically send a system alive message
     """
-    msg = "🟢 Stock bot runningx"
+    msg = "🟢 Stock bot is running"
     send_line(msg)
 
 
-def get_stock_reason(symbol, max_items=3):
+def get_stock_reason(symbol, max_items=2):
     """
-    Fetch recent news headlines for a stock and turn them into a short explanation.
+    Try Yahoo Finance news first.
+    If empty, fallback to Google News RSS.
+    Returns headline + source + link.
     """
+    # ---------- 1) Try yfinance news ----------
     try:
         ticker = yf.Ticker(symbol)
         news = ticker.news
 
-        if not news:
-            return "No recent news found. Move may be driven by general market momentum or technical buying."
+        reasons = []
+
+        if news:
+            for item in news[:max_items]:
+                title = item.get("title", "").strip()
+                publisher = item.get("publisher", "").strip()
+                link = item.get("link", "").strip()
+
+                if title:
+                    parts = [f"- {title}"]
+
+                    if publisher:
+                        parts.append(f"  Source: {publisher}")
+
+                    if link:
+                        parts.append(f"  Link: {link}")
+
+                    reasons.append("\n".join(parts))
+
+        if reasons:
+            return "\n\n".join(reasons)
+
+    except Exception as e:
+        print(f"Yahoo news fetch error for {symbol}: {e}")
+
+    # ---------- 2) Fallback: Google News RSS ----------
+    try:
+        query = quote(f"{symbol} stock")
+        rss_url = f"https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
+
+        feed = feedparser.parse(rss_url)
 
         reasons = []
 
-        for item in news[:max_items]:
-            title = item.get("title", "")
-            publisher = item.get("publisher", "")
+        for entry in feed.entries[:max_items]:
+            title = getattr(entry, "title", "").strip()
+            link = getattr(entry, "link", "").strip()
+
+            # Google RSS source is often in title like "... - Reuters"
+            source = ""
+            if " - " in title:
+                title_parts = title.rsplit(" - ", 1)
+                title = title_parts[0].strip()
+                source = title_parts[1].strip()
+
             if title:
-                if publisher:
-                    reasons.append(f"- {title} ({publisher})")
-                else:
-                    reasons.append(f"- {title}")
+                parts = [f"- {title}"]
 
-        if not reasons:
-            return "No clear recent headline found. Move may be technical or market-driven."
+                if source:
+                    parts.append(f"  Source: {source}")
 
-        return "\n".join(reasons)
+                if link:
+                    parts.append(f"  Link: {link}")
+
+                reasons.append("\n".join(parts))
+
+        if reasons:
+            return "\n\n".join(reasons)
 
     except Exception as e:
-        print(f"News fetch error for {symbol}: {e}")
-        return "Unable to fetch reason right now."
+        print(f"Google RSS fetch error for {symbol}: {e}")
+
+    return "No recent news found. Move may be driven by market momentum, technical breakout, or sector strength."
 
 
 def check_stock(symbol, config):
@@ -93,9 +150,9 @@ def check_stock(symbol, config):
     Check stock price against upper/lower thresholds
     """
     try:
-        data = yf.Ticker(symbol).history(period="1d")
+        data = yf.Ticker(symbol).history(period="2d")
 
-        if data.empty:
+        if data.empty or len(data) < 1:
             print(f"No data for {symbol}")
             return
 
@@ -104,6 +161,15 @@ def check_stock(symbol, config):
 
         upper = config["upper"]
         lower = config["lower"]
+
+        # Calculate daily % change
+        if len(data) >= 2:
+            prev_close = data["Close"].iloc[-2]
+            pct_change = ((price - prev_close) / prev_close) * 100
+        else:
+            pct_change = 0
+
+        pct_text = f"{pct_change:+.2f}% today"
 
         now = time.time()
         prev_state = last_state.get(symbol, "normal")
@@ -125,20 +191,24 @@ def check_stock(symbol, config):
 
                 msg = (
                     f"🚀 {symbol} ABOVE {upper}\n"
-                    f"Now: {round(price,2)}\n\n"
+                    f"Now: {round(price,2)} ({pct_text})\n\n"
                     f"Possible reason:\n{reason}"
                 )
 
             elif current_state == "below":
+ 		#reason = get_stock_reason(symbol)
+
                 msg = (
                     f"🔻 {symbol} BELOW {lower}\n"
-                    f"Now: {round(price,2)}"
+		    f"Now: {round(price,2)} ({pct_text})"
+                #    f"Now: {round(price,2)} ({pct_text})\n\n"
+		#    f"Possible reason:\n{reason}"
                 )
 
             else:
                 msg = (
                     f"↔️ {symbol} back to normal range\n"
-                    f"Now: {round(price,2)}"
+                    f"Now: {round(price,2)} ({pct_text})"
                 )
 
             send_line(msg)
