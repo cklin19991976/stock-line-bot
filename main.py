@@ -157,12 +157,13 @@ def check_stock(symbol, config):
                 )
 
             elif current_state == "below":
- 		reason = get_stock_reason(symbol)
+ 		#reason = get_stock_reason(symbol)
 
                 msg = (
                     f"🔻 {symbol} BELOW {lower}\n"
-                    f"Now: {round(price,2)} ({pct_text})\n\n"
-		    f"Possible reason:\n{reason}"
+		    f"Now: {round(price,2)} ({pct_text})"
+                #    f"Now: {round(price,2)} ({pct_text})\n\n"
+		#    f"Possible reason:\n{reason}"
                 )
 
             else:
