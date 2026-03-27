@@ -287,7 +287,7 @@ def check_stock(symbol, config):
                         f"Now: {round(price,2)} ({pct_text})\n\n"
                         f"Possible reason:\n{reason}"
                     )
-                else:
+                else:	
                     msg = (
                         f"🚀 {symbol} ABOVE {upper}\n"
                         f"Now: {round(price,2)} ({pct_text})\n"
@@ -295,9 +295,11 @@ def check_stock(symbol, config):
                     )
 
             elif current_state == "below":
+		reason = explain_stock_move(symbol, price, pct_change)
                 msg = (
                     f"🔻 {symbol} BELOW {lower}\n"
-                    f"Now: {round(price,2)} ({pct_text})"
+                    f"Now: {round(price,2)} ({pct_text})\n\n"
+		    f"Possible reason:\n{reason}"
                 )
 
             else:
