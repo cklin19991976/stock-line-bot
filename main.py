@@ -27,6 +27,16 @@ SYMBOLS = {
     "00662.TW": {"upper": 105, "lower": 90},
 }
 
+# Better news search names
+COMPANY_NAMES = {
+    "AAPL": "Apple",
+    "TSLA": "Tesla",
+    "NVDA": "NVIDIA",
+    "MSFT": "Microsoft",
+    "GOOG": "Google",
+    "TSM": "TSMC"
+}
+
 CHECK_INTERVAL = 60        # check every 60 seconds
 COOLDOWN = 1800             # prevent repeated alerts within 30 mins
 HEARTBEAT_INTERVAL = 14400  # send alive message every 4 hour
@@ -65,7 +75,7 @@ def send_heartbeat():
     """
     Periodically send a system alive message
     """
-    msg = "🟢 Stock bot is running"
+    msg = "🟢 Stock bot is running."
     send_line(msg)
 
 
@@ -107,7 +117,9 @@ def get_stock_reason(symbol, max_items=2):
 
     # ---------- 2) Fallback: Google News RSS ----------
     try:
-        query = quote(f"{symbol} stock")
+        company = COMPANY_NAMES.get(symbol, symbol)
+        query = quote(f"{company} stock")
+        # query = quote(f"{symbol} stock")
         rss_url = f"https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
 
         feed = feedparser.parse(rss_url)
