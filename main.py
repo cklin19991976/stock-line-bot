@@ -8,7 +8,7 @@ USER_ID = os.getenv("USER_ID")
 
 # ===== CONFIG =====
 SYMBOLS = {
-    "AAPL": {"upper": 300, "lower": 299},
+    "AAPL": {"upper": 200, "lower": 99},
     "SPY": {"upper": 697, "lower": 614},
     "QQQ": {"upper": 637, "lower": 540},
     "TSM": {"upper": 390, "lower": 300},
