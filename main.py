@@ -67,7 +67,7 @@ def send_heartbeat():
     send_line(msg)
 
 
-def get_stock_reason(symbol, max_items=2):
+def get_stock_reason(symbol, max_items=3):
     """
     Fetch recent news headlines for a stock and include source + URL
     """
@@ -86,15 +86,15 @@ def get_stock_reason(symbol, max_items=2):
             link = item.get("link", "").strip()
 
             if title:
-                parts = [f"- {title}"]
+                line = f"- {title}"
 
                 if publisher:
-                    parts.append(f"  Source: {publisher}")
+                    line += f" ({publisher})"
 
                 if link:
-                    parts.append(f"  Link: {link}")
+                    line += f"\n  {link}"
 
-                reasons.append("\n".join(parts))
+                reasons.append(line)
 
         if not reasons:
             return "No clear recent headline found. Move may be technical or market-driven."
