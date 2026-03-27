@@ -13,15 +13,15 @@ SYMBOLS = {
     "QQQ": {"upper": 637, "lower": 540},
     "TSM": {"upper": 390, "lower": 300},
     "ASML": {"upper": 1547, "lower": 1250},
-    "UCO": {"upper": 40, "lower": 28},
+    "UCO": {"upper": 44.12, "lower": 28},
     "GOOG": {"upper": 350, "lower": 276},
     "MSFT": {"upper": 555, "lower": 347},
     "NVDA": {"upper": 212, "lower": 160},
     "CL=F": {"upper": 110, "lower": 80},
     "^TNX": {"upper": 4.55, "lower": 3.95},
-    "2330.TW": {"upper": 2025, "lower": 1750},
+    "2330.TW": {"upper": 1800, "lower": 1750},
     "0050.TW": {"upper": 81.8, "lower": 70},
-    "1215.TW": {"upper": 163, "lower": 140},
+    "1215.TW": {"upper": 141, "lower": 140},
     "00662.TW": {"upper": 105, "lower": 90},
 }
 
