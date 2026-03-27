@@ -15,7 +15,7 @@ SYMBOLS = {
     "QQQ": {"upper": 637, "lower": 540},
     "TSM": {"upper": 390, "lower": 300},
     "ASML": {"upper": 1547, "lower": 1250},
-    "UCO": {"upper": 44.12, "lower": 28},
+    "UCO": {"upper": 40, "lower": 28},
     "GOOG": {"upper": 350, "lower": 276},
     "MSFT": {"upper": 555, "lower": 347},
     "NVDA": {"upper": 212, "lower": 160},
