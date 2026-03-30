@@ -16,17 +16,15 @@ SYMBOLS = {
     "AAPL": {"upper": 240, "lower": 200},
     "SPY": {"upper": 697, "lower": 614},
     "QQQ": {"upper": 637, "lower": 540},
-    "TSM": {"upper": 390, "lower": 300},
+    "TSM": {"upper": 390, "lower": 340},
     "ASML": {"upper": 1547, "lower": 1250},
     "UCO": {"upper": 44.5, "lower": 28},
-    "GOOG": {"upper": 350, "lower": 257},
+    "GOOG": {"upper": 350, "lower": 276},
     "MSFT": {"upper": 555, "lower": 347},
-    "META": {"upper": 796, "lower": 484},
-    "ISRG": {"upper": 600, "lower": 430},
     "NVDA": {"upper": 212, "lower": 160},
-    "CL=F": {"upper": 110.5, "lower": 80},
+    "CL=F": {"upper": 110, "lower": 80},
     "^TNX": {"upper": 4.55, "lower": 3.95},
-    "2330.TW": {"upper": 2024, "lower": 1750},
+    "2330.TW": {"upper": 2025, "lower": 1750},
     "0050.TW": {"upper": 81.8, "lower": 70},
     "1215.TW": {"upper": 160, "lower": 140},
     "00662.TW": {"upper": 105, "lower": 90},
@@ -53,17 +51,11 @@ SECTOR_ETF = {
     "2330.TW": "^TWII" # Taiwan market index
 }
 
-MACRO_SYMBOLS = {
-    "qqq": "QQQ",
-    "spy": "SPY",
-    "tnx": "^TNX"   # US 10Y Treasury yield proxy
-}
-
 CHECK_INTERVAL = 60
 COOLDOWN = 1800
-HEARTBEAT_INTERVAL = 14400
+HEARTBEAT_INTERVAL = 28800
 
-MEANINGFUL_UP_MOVE_PCT = 0.01
+MEANINGFUL_UP_MOVE_PCT = 0.1
 MEANINGFUL_DOWN_MOVE_PCT = 1.5
 
 last_state = {}
@@ -97,7 +89,7 @@ def send_line(msg):
 
 
 def send_heartbeat():
-    msg = "🟢 StockBotX alive running"
+    msg = "🟢 StockBot alive runningxx"
     send_line(msg)
 
 
@@ -339,107 +331,13 @@ def detect_event_context(symbol):
         return ""
 
 
-def get_macro_context(pct_change, direction):
-    """
-    Check broad market / macro context:
-    - QQQ (tech / growth)
-    - SPY (broad market)
-    - ^TNX (US 10Y Treasury yield)
-
-    Returns explanation text if meaningful.
-    """
-    reasons = []
-
-    try:
-        # ---------- QQQ ----------
-        qqq_data = yf.Ticker(MACRO_SYMBOLS["qqq"]).history(period="2d")
-        if not qqq_data.empty and len(qqq_data) >= 2:
-            qqq_now = qqq_data["Close"].iloc[-1]
-            qqq_prev = qqq_data["Close"].iloc[-2]
-            qqq_pct = ((qqq_now - qqq_prev) / qqq_prev) * 100
-
-            if abs(qqq_pct) >= 1.0:
-                reasons.append(f"QQQ moved {qqq_pct:+.2f}% today")
-
-        # ---------- SPY ----------
-        spy_data = yf.Ticker(MACRO_SYMBOLS["spy"]).history(period="2d")
-        if not spy_data.empty and len(spy_data) >= 2:
-            spy_now = spy_data["Close"].iloc[-1]
-            spy_prev = spy_data["Close"].iloc[-2]
-            spy_pct = ((spy_now - spy_prev) / spy_prev) * 100
-
-            if abs(spy_pct) >= 1.0:
-                reasons.append(f"SPY moved {spy_pct:+.2f}% today")
-
-        # ---------- US 10Y Yield ----------
-        tnx_data = yf.Ticker(MACRO_SYMBOLS["tnx"]).history(period="2d")
-        if not tnx_data.empty and len(tnx_data) >= 2:
-            tnx_now = tnx_data["Close"].iloc[-1]
-            tnx_prev = tnx_data["Close"].iloc[-2]
-            tnx_change = tnx_now - tnx_prev
-
-            # ^TNX is yield x10 on Yahoo, so 0.10 = ~10 bps
-            if abs(tnx_change) >= 0.10:
-                direction_word = "rose" if tnx_change > 0 else "fell"
-                reasons.append(f"US 10Y yield {direction_word} by about {abs(tnx_change)*10:.0f} bps")
-
-    except Exception as e:
-        print(f"Macro context error: {e}")
-
-    if not reasons:
-        return ""
-
-    summary = "🌍 Macro / market context:\n" + "\n".join([f"- {r}" for r in reasons])
-
-    # ---------- Interpretation ----------
-    interpretation = ""
-
-    try:
-        qqq_data = yf.Ticker(MACRO_SYMBOLS["qqq"]).history(period="2d")
-        tnx_data = yf.Ticker(MACRO_SYMBOLS["tnx"]).history(period="2d")
-
-        qqq_pct = 0
-        tnx_change = 0
-
-        if not qqq_data.empty and len(qqq_data) >= 2:
-            qqq_now = qqq_data["Close"].iloc[-1]
-            qqq_prev = qqq_data["Close"].iloc[-2]
-            qqq_pct = ((qqq_now - qqq_prev) / qqq_prev) * 100
-
-        if not tnx_data.empty and len(tnx_data) >= 2:
-            tnx_now = tnx_data["Close"].iloc[-1]
-            tnx_prev = tnx_data["Close"].iloc[-2]
-            tnx_change = tnx_now - tnx_prev
-
-        if direction == "above":
-            if qqq_pct >= 1.0:
-                interpretation = "Broad growth / tech strength may be helping the move."
-            elif tnx_change <= -0.10:
-                interpretation = "Falling yields may be supporting growth-stock valuations."
-
-        elif direction == "below":
-            if qqq_pct <= -1.0:
-                interpretation = "Broad growth / tech weakness may be pressuring the stock."
-            elif tnx_change >= 0.10:
-                interpretation = "Rising yields may be pressuring growth-stock valuations."
-
-    except Exception as e:
-        print(f"Macro interpretation error: {e}")
-
-    if interpretation:
-        summary += f"\n\n💡 Macro read:\n{interpretation}"
-
-    return summary
-
-
 def explain_stock_move(symbol, price, pct_change, direction):
     """
     More accurate explanation using:
     1) company news
-    2) event context
-    3) macro / market context
-    4) sector ETF move
-    5) technical breakout / breakdown
+    2) sector ETF move
+    3) technical breakout / breakdown
+    4) event-day detection
     """
     reasons = []
 
@@ -454,12 +352,7 @@ def explain_stock_move(symbol, price, pct_change, direction):
     if event_context:
         reasons.append(event_context)
 
-    # ---------- C) Macro / market context ----------
-    macro_context = get_macro_context(pct_change, direction)
-    if macro_context:
-        reasons.append(macro_context)
-
-    # ---------- D) Sector / market move ----------
+    # ---------- C) Sector / market move ----------
     try:
         sector_symbol = SECTOR_ETF.get(symbol)
 
@@ -493,7 +386,7 @@ def explain_stock_move(symbol, price, pct_change, direction):
     except Exception as e:
         print(f"Sector check error for {symbol}: {e}")
 
-    # ---------- E) Technical breakout / breakdown ----------
+    # ---------- D) Technical breakout / breakdown ----------
     try:
         hist = yf.Ticker(symbol).history(period="1mo")
 
