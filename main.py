@@ -14,7 +14,7 @@ USER_ID = os.getenv("USER_ID")
 # ===== CONFIG =====
 SYMBOLS = {
     "AAPL": {"upper": 240, "lower": 200},
-    "SPY": {"upper": 697, "lower": 614},
+    "SPY": {"upper": 697, "lower": 610},
     "QQQ": {"upper": 637, "lower": 540},
     "TSM": {"upper": 390, "lower": 340},
     "ASML": {"upper": 1547, "lower": 1250},
@@ -53,7 +53,7 @@ SECTOR_ETF = {
 
 CHECK_INTERVAL = 60
 COOLDOWN = 1800
-HEARTBEAT_INTERVAL = 28800
+HEARTBEAT_INTERVAL = 43200
 
 MEANINGFUL_UP_MOVE_PCT = 0.1
 MEANINGFUL_DOWN_MOVE_PCT = 1.5
