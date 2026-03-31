@@ -14,19 +14,21 @@ USER_ID = os.getenv("USER_ID")
 # ===== CONFIG =====
 SYMBOLS = {
     "AAPL": {"upper": 240, "lower": 200},
-    "SPY": {"upper": 697, "lower": 610},
+    "SPY": {"upper": 697, "lower": 614},
     "QQQ": {"upper": 637, "lower": 540},
-    "TSM": {"upper": 390, "lower": 340},
+    "TSM": {"upper": 390, "lower": 300},
     "ASML": {"upper": 1547, "lower": 1250},
     "UCO": {"upper": 44.5, "lower": 28},
-    "GOOG": {"upper": 350, "lower": 276},
+    "GOOG": {"upper": 350, "lower": 257},
     "MSFT": {"upper": 555, "lower": 347},
+    "META": {"upper": 796, "lower": 484},
+    "ISRG": {"upper": 600, "lower": 430},
     "NVDA": {"upper": 212, "lower": 160},
-    "CL=F": {"upper": 110, "lower": 80},
+    "CL=F": {"upper": 110.5, "lower": 80},
     "^TNX": {"upper": 4.55, "lower": 3.95},
-    "2330.TW": {"upper": 2025, "lower": 1751},
+    "2330.TW": {"upper": 2024, "lower": 1750},
     "0050.TW": {"upper": 81.8, "lower": 70},
-    "1215.TW": {"upper": 160, "lower": 140},
+    "1215.TW": {"upper": 160, "lower": 132},
     "00662.TW": {"upper": 105, "lower": 90},
 }
 
