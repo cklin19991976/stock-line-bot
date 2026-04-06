@@ -24,7 +24,7 @@ SYMBOLS = {
     "META": {"upper": 796, "lower": 484},
     "ISRG": {"upper": 600, "lower": 430},
     "NVDA": {"upper": 212, "lower": 160},
-    "CL=F": {"upper": 110.5, "lower": 80},
+    "CL=F": {"upper": 120, "lower": 80},
     "^TNX": {"upper": 4.55, "lower": 3.95},
     "2330.TW": {"upper": 2024, "lower": 1750},
     "0050.TW": {"upper": 81.8, "lower": 70},
