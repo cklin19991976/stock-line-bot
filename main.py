@@ -13,24 +13,26 @@ USER_ID = os.getenv("USER_ID")
 
 # ===== CONFIG =====
 SYMBOLS = {
-    "AAPL": {"upper": 240, "lower": 200},
-    "SPY": {"upper": 765, "lower": 614},
-    "QQQ": {"upper": 700, "lower": 540},
-    "TSM": {"upper": 400, "lower": 350},
-    "ASML": {"upper": 1547, "lower": 1250},
-    "UCO": {"upper": 44.5, "lower": 28},
-    "GOOG": {"upper": 350, "lower": 257},
-    "MSFT": {"upper": 555, "lower": 347},
-    "META": {"upper": 796, "lower": 484},
-    "ISRG": {"upper": 600, "lower": 430},
-    "NVDA": {"upper": 212, "lower": 160},
-    "T": {"upper": 29, "lower": 23.4},	
-    "CL=F": {"upper": 120, "lower": 80},
+ #   "AAPL": {"upper": 240, "lower": 200},
+    "SPY": {"upper": 800, "lower": 614},
+    "QQQ": {"upper": 800, "lower": 540},
+    "TSM": {"upper": 500, "lower": 350},
+    "ASML": {"upper": 1850, "lower": 1250},
+ #   "UCO": {"upper": 44.5, "lower": 28},
+    "GOOG": {"upper": 400, "lower": 300},
+    "MSFT": {"upper": 500, "lower": 370},
+    "META": {"upper": 700, "lower": 484},
+    "ISRG": {"upper": 540, "lower": 370},
+    "NVDA": {"upper": 250, "lower": 190},
+ #   "T": {"upper": 29, "lower": 23.4},	
+ #   "CL=F": {"upper": 120, "lower": 80},
     "^TNX": {"upper": 4.55, "lower": 3.95},
-    "2330.TW": {"upper": 2220, "lower": 1750},
-    "0050.TW": {"upper": 90, "lower": 70},
-    "1215.TW": {"upper": 160, "lower": 132},
-    "00662.TW": {"upper": 111, "lower": 100},
+    "2330.TW": {"upper": 2500, "lower": 2100},
+    "0050.TW": {"upper": 120, "lower": 97},
+    "1215.TW": {"upper": 160, "lower": 105},
+    "4772.TWO": {"upper": 340, "lower": 290},
+    "2912.TW": {"upper": 260, "lower": 236},
+    "00662.TW": {"upper": 135, "lower": 100},
 }
 
 # Better news search names
@@ -92,7 +94,7 @@ def send_line(msg):
 
 
 def send_heartbeat():
-    msg = "🟢 StockBot alive runningxx"
+    msg = "🟢 StockBot alive running!"
     send_line(msg)
 
 
