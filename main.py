@@ -31,7 +31,7 @@ SYMBOLS = {
     "0050.TW": {"upper": 120, "lower": 97},
     "1215.TW": {"upper": 160, "lower": 105},
     "4772.TWO": {"upper": 340, "lower": 290},
-    "2912.TW": {"upper": 260, "lower": 236},
+    "2912.TW": {"upper": 260, "lower": 200},
     "00662.TW": {"upper": 135, "lower": 100},
 }
 
@@ -58,7 +58,7 @@ SECTOR_ETF = {
 
 CHECK_INTERVAL = 60
 COOLDOWN = 1800
-HEARTBEAT_INTERVAL = 43200
+HEARTBEAT_INTERVAL = 86400
 
 MEANINGFUL_UP_MOVE_PCT = 0.1
 MEANINGFUL_DOWN_MOVE_PCT = 1.5
@@ -94,7 +94,7 @@ def send_line(msg):
 
 
 def send_heartbeat():
-    msg = "🟢 StockBot alive running!"
+    msg = "🟢 StockBot making money!"
     send_line(msg)
 
 
@@ -494,15 +494,21 @@ def check_stock(symbol, config):
                     )
 
             else:
-                msg = (
-                    f"↔️ {symbol} back to normal range\n"
-                    f"Now: {round(price,2)} ({pct_text})"
-                )
+                msg = None
+               # msg = (
+               #     f"↔️ {symbol} back to normal range\n"
+               #     f"Now: {round(price,2)} ({pct_text})"
+               # )
 
-            send_line(msg)
+            # send_line(msg)
 
+            # last_state[symbol] = current_state
+            # last_alert_time[symbol] = now
+            if msg:
+                send_line(msg)
+                last_alert_time[symbol] = now
+             
             last_state[symbol] = current_state
-            last_alert_time[symbol] = now
 
     except Exception as e:
         print(f"Error checking {symbol}: {e}")
