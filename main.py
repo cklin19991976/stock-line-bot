@@ -46,7 +46,7 @@ TW_REVENUE_STOCKS = {
 revenue_last_reported = {}
 
 # ===== UPDATED: QUARTERLY EARNINGS CONFIG =====
-EARNINGS_CHECK_INTERVAL = 900  # STEP 1: Reduced from 12 hours to 15 minutes to eliminate alert lag
+EARNINGS_CHECK_INTERVAL = 14400  # STEP 1: Reduced from 12 hours to 4 hrs to eliminate alert lag
 last_earnings_check = 0
 earnings_last_reported = {}  # Tracks reported quarters: {"AAPL": "2026-Q1"}
 
@@ -74,7 +74,7 @@ SECTOR_ETF = {
 CHECK_INTERVAL = 60
 COOLDOWN = 1800
 HEARTBEAT_INTERVAL = 86400
-REVENUE_CHECK_INTERVAL = 86400
+REVENUE_CHECK_INTERVAL = 14400   # Check revenue every 4 hrs between 1st and 10th in each month
 
 MEANINGFUL_UP_MOVE_PCT = 0.1
 MEANINGFUL_DOWN_MOVE_PCT = 1.5
@@ -545,13 +545,13 @@ def main():
         for symbol, config in SYMBOLS.items():
             check_stock(symbol, config)
 
-        # 2) Taiwan Monthly Revenue Check (Once a day)
+        # 2) Taiwan Monthly Revenue Check (every 4 hrs in the revenue window 1st to 10th)
         if now - last_revenue_check > REVENUE_CHECK_INTERVAL:
             print("Running Taiwan monthly revenue check...")
             check_tw_monthly_revenue()
             last_revenue_check = now
 
-        # 3) UPDATED: Quarterly Earnings (Checks every 15 mins, filters out weekends internally)
+        # 3) UPDATED: Quarterly Earnings (Checks every 4 hrs, filters out weekends internally)
         if now - last_earnings_check > EARNINGS_CHECK_INTERVAL:
             check_and_alert_earnings()
             last_earnings_check = now
