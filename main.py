@@ -30,7 +30,7 @@ SYMBOLS = {
     "2330.TW": {"upper": 2500, "lower": 2100},
     "0050.TW": {"upper": 120, "lower": 97},
     "1215.TW": {"upper": 160, "lower": 105},
-    "4772.TWO": {"upper": 360, "lower": 268},
+    "4772.TWO": {"upper": 360, "lower": 240},
     "2912.TW": {"upper": 260, "lower": 200},
     "00662.TW": {"upper": 135, "lower": 100},
 }
@@ -553,13 +553,13 @@ def main():
 
         # 3) UPDATED: Quarterly Earnings (Checks every 4 hrs, filters out weekends internally)
         if now - last_earnings_check > EARNINGS_CHECK_INTERVAL:
-            check_and_alert_earnings()
+            # check_and_alert_earnings()
             last_earnings_check = now
 
         # 4) Heartbeat (Every 24 hours) Stop sending heartbeat here
         if now - last_heartbeat > HEARTBEAT_INTERVAL:
             print("Sending heartbeat...")
-            # send_heartbeat()
+            send_heartbeat()
             last_heartbeat = now
 
         time.sleep(CHECK_INTERVAL)
