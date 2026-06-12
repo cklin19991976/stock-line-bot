@@ -14,25 +14,26 @@ USER_ID = os.getenv("USER_ID")
 # ===== CONFIG =====
 SYMBOLS = {
  #   "AAPL": {"upper": 240, "lower": 200},
-    "SPY": {"upper": 800, "lower": 614},
-    "QQQ": {"upper": 800, "lower": 540},
-    "TSM": {"upper": 500, "lower": 350},
-    "ASML": {"upper": 1850, "lower": 1250},
+    "SPY": {"upper": 800, "lower": 695},
+    "QQQ": {"upper": 800, "lower": 637},
+    "TSM": {"upper": 500, "lower": 390},
+    "ASML": {"upper": 2000, "lower": 1750},
  #   "UCO": {"upper": 44.5, "lower": 28},
-    "GOOG": {"upper": 400, "lower": 300},
-    "MSFT": {"upper": 500, "lower": 370},
-    "META": {"upper": 700, "lower": 484},
-    "ISRG": {"upper": 540, "lower": 370},
+    "GOOG": {"upper": 400, "lower": 340},
+    "MSFT": {"upper": 500, "lower": 375},
+    "META": {"upper": 700, "lower": 525},
+    "ISRG": {"upper": 540, "lower": 405},
     "NVDA": {"upper": 250, "lower": 190},
  #   "T": {"upper": 29, "lower": 23.4},
  #   "CL=F": {"upper": 120, "lower": 80},
     "^TNX": {"upper": 5.0, "lower": 3.95},
-    "2330.TW": {"upper": 2500, "lower": 2100},
-    "0050.TW": {"upper": 120, "lower": 97},
+    "2330.TW": {"upper": 2500, "lower": 2150},
+    "0050.TW": {"upper": 120, "lower": 99},
     "1215.TW": {"upper": 160, "lower": 105},
+    "1232.TW": {"upper": 162, "lower": 141},
     "4772.TWO": {"upper": 360, "lower": 240},
-    "2912.TW": {"upper": 260, "lower": 200},
-    "00662.TW": {"upper": 135, "lower": 100},
+    "2912.TW": {"upper": 250, "lower": 200},
+    "00662.TW": {"upper": 135, "lower": 106},
 }
 
 # ===== TAIWAN MONTHLY REVENUE CONFIG =====
@@ -40,6 +41,7 @@ TW_REVENUE_STOCKS = {
     "2330": "TSMC",
     "2912": "President Chain Store",
     "1215": "Uni-President",
+    "1232": "TTET",
     "4772": "Superpmi",   # 4772.TWO
 }
 
@@ -73,7 +75,7 @@ SECTOR_ETF = {
 
 CHECK_INTERVAL = 60
 COOLDOWN = 1800
-HEARTBEAT_INTERVAL = 86400
+HEARTBEAT_INTERVAL = 172800      # Show APT alive message every 2 days
 REVENUE_CHECK_INTERVAL = 14400   # Check revenue every 4 hrs between 1st and 10th in each month
 
 MEANINGFUL_UP_MOVE_PCT = 0.1
@@ -113,7 +115,7 @@ def send_line(msg):
 
 
 def send_heartbeat():
-    msg = "🟢 StockBot making money!"
+    msg = "🟢 StockBot $$$!"
     send_line(msg)
 
 
