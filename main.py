@@ -22,7 +22,7 @@ SYMBOLS = {
     "GOOG": {"upper": 400, "lower": 335},
     "MSFT": {"upper": 460, "lower": 330},
     "META": {"upper": 700, "lower": 525},
-    "ISRG": {"upper": 540, "lower": 355},
+    "ISRG": {"upper": 540, "lower": 313},
     "NVDA": {"upper": 236, "lower": 190},
  #   "T": {"upper": 29, "lower": 23.4},
  #   "CL=F": {"upper": 120, "lower": 80},
@@ -31,7 +31,7 @@ SYMBOLS = {
     "0050.TW": {"upper": 120, "lower": 96},
     "1215.TW": {"upper": 130, "lower": 105},
     "1232.TW": {"upper": 180, "lower": 143},
-    "4772.TWO": {"upper": 360, "lower": 240},
+    "4772.TWO": {"upper": 360, "lower": 220},
     "2912.TW": {"upper": 250, "lower": 200},
     "00662.TW": {"upper": 135, "lower": 106},
 }
