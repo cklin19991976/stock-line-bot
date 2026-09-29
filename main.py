@@ -30,7 +30,7 @@ SYMBOLS = {
     "BABA": {"upper": 154, "lower": 92}, 
  #   "T": {"upper": 29, "lower": 23.4},
  #   "CL=F": {"upper": 120, "lower": 80},
-    "^TNX": {"upper": 5.25, "lower": 3.95},
+    "^TNX": {"upper": 5.5, "lower": 5},
     "2330.TW": {"upper": 2800, "lower": 2250},
     "0050.TW": {"upper": 120, "lower": 99},
     "1215.TW": {"upper": 130, "lower": 104},
