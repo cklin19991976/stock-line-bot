@@ -35,7 +35,7 @@ SYMBOLS = {
     "0050.TW": {"upper": 127, "lower": 105},
     "1215.TW": {"upper": 128, "lower": 100},
     "1232.TW": {"upper": 180, "lower": 143},
-    "4772.TWO": {"upper": 310, "lower": 262},
+    "4772.TWO": {"upper": 288, "lower": 256},
     "2912.TW": {"upper": 250, "lower": 200},
     "00662.TW": {"upper": 135, "lower": 106},
 }
