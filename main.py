@@ -24,7 +24,7 @@ SYMBOLS = {
  #   "META": {"upper": 700, "lower": 525},
     "ISRG": {"upper": 500, "lower": 313},
     "NVDA": {"upper": 260, "lower": 190},
-    "COST": {"upper": 975, "lower": 890},
+    "COST": {"upper": 1000, "lower": 890},
     "SPCX": {"upper": 200, "lower": 115},
     "BRK-B": {"upper": 537, "lower": 490},
     "BABA": {"upper": 154, "lower": 92}, 
