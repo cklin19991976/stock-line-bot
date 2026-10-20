@@ -26,7 +26,7 @@ SYMBOLS = {
     "NVDA": {"upper": 260, "lower": 190},
     "COST": {"upper": 1000, "lower": 890},
     "SPCX": {"upper": 200, "lower": 115},
-    "BRK-B": {"upper": 537, "lower": 490},
+    "BRK-B": {"upper": 566, "lower": 490},
     "BABA": {"upper": 154, "lower": 92}, 
  #   "T": {"upper": 29, "lower": 23.4},
  #   "CL=F": {"upper": 120, "lower": 80},
