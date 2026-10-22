@@ -17,7 +17,7 @@ SYMBOLS = {
     "SPY": {"upper": 800, "lower": 695},
     "QQQ": {"upper": 800, "lower": 665},
     "TSM": {"upper": 530, "lower": 350},
-    "ASML": {"upper": 2000, "lower": 1600},
+    "ASML": {"upper": 2000, "lower": 1540},
     "SOXX": {"upper": 620, "lower": 450},
     "GOOG": {"upper": 380, "lower": 320},
     "MSFT": {"upper": 614, "lower": 475},
