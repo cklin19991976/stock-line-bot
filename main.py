@@ -17,7 +17,7 @@ SYMBOLS = {
     "SPY": {"upper": 800, "lower": 695},
     "QQQ": {"upper": 800, "lower": 665},
     "TSM": {"upper": 500, "lower": 378},
-    "ASML": {"upper": 2000, "lower": 1500},
+    "ASML": {"upper": 2000, "lower": 1400},
     "SOXX": {"upper": 620, "lower": 436},
     "GOOG": {"upper": 380, "lower": 268},
     "MSFT": {"upper": 614, "lower": 475},
@@ -35,7 +35,7 @@ SYMBOLS = {
     "0050.TW": {"upper": 127, "lower": 94},
     "1215.TW": {"upper": 128, "lower": 100},
     "1232.TW": {"upper": 180, "lower": 143},
-    "4772.TWO": {"upper": 288, "lower": 205},
+    "4772.TWO": {"upper": 288, "lower": 188},
     "2912.TW": {"upper": 250, "lower": 200},
     "00662.TW": {"upper": 135, "lower": 106},
 }
