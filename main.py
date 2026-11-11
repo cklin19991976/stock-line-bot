@@ -23,7 +23,7 @@ SYMBOLS = {
     "MSFT": {"upper": 614, "lower": 475},
     "TLT": {"upper": 87, "lower": 76.43},
     "ISRG": {"upper": 500, "lower": 360},
-    "NVDA": {"upper": 260, "lower": 159},
+    "NVDA": {"upper": 194, "lower": 155},
     "COST": {"upper": 1150, "lower": 910},
     "SPCX": {"upper": 200, "lower": 105},
     "BRK-B": {"upper": 590, "lower": 510},
